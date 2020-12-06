@@ -1,4 +1,4 @@
-package com.concurrent;
+package com.concurrent.basic;
 
 /**
  * synchronized 可重入性

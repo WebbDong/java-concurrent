@@ -1,4 +1,4 @@
-package com.concurrent;
+package com.concurrent.basic;
 
 /**
  * interrupt中断

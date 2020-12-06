@@ -1,4 +1,4 @@
-package com.concurrent;
+package com.concurrent.basic;
 
 import java.util.Random;
 import java.util.concurrent.ArrayBlockingQueue;

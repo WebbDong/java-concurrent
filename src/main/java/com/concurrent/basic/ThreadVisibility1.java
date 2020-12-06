@@ -1,4 +1,4 @@
-package com.concurrent;
+package com.concurrent.basic;
 
 /**
  * 并发可见性

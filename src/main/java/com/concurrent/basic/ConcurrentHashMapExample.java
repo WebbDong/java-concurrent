@@ -1,4 +1,4 @@
-package com.concurrent;
+package com.concurrent.basic;
 
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;

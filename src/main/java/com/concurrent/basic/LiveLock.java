@@ -1,4 +1,4 @@
-package com.concurrent;
+package com.concurrent.basic;
 
 /**
  * 活锁
@@ -11,7 +11,6 @@ package com.concurrent;
 public class LiveLock {
 
     public static void main(String[] args) {
-
     }
 
 }

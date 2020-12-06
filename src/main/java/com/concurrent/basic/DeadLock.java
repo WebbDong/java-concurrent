@@ -1,4 +1,4 @@
-package com.concurrent;
+package com.concurrent.basic;
 
 import com.concurrent.model.Account;
 

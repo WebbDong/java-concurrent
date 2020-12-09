@@ -1,5 +1,9 @@
 package com.concurrent.basic;
 
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -7,9 +11,16 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class ThreadAtomicity {
 
-    /*
-    private static int num = 0;
+//    private static int num = 0;
 
+    /*
+    private static void increase() {
+        // ++运算符不是一个原子操作，是三个原子操作的组合操作，这三个独立的原子操作组合了后就不是原子操作了
+        num++;
+    }
+     */
+
+    /*
     private synchronized static void increase() {
         num++;
     }
@@ -27,20 +38,26 @@ public class ThreadAtomicity {
      * @throws Exception
      */
     public static void main(String[] args) throws Exception {
-        Thread[] threads = new Thread[10];
-        for (int i = 0; i < threads.length; i++) {
-            threads[i] = new Thread(() -> {
-                for (int j = 0; j < 1000; j++) {
-                    increase();
-                }
-            });
-            threads[i].start();
+        final int THREAD_COUNT = 10;
+        final CountDownLatch cdl = new CountDownLatch(THREAD_COUNT);
+        var threadPoolExecutor1 = new ThreadPoolExecutor(
+                5,
+                THREAD_COUNT,
+                1,
+                TimeUnit.MINUTES,
+                new ArrayBlockingQueue<>(10),
+                new ThreadPoolExecutor.AbortPolicy());
+        Runnable runnable = () -> {
+            for (int j = 0; j < 1000; j++) {
+                increase();
+            }
+            cdl.countDown();
+        };
+        for (int i = 0; i < THREAD_COUNT; i++) {
+            threadPoolExecutor1.execute(runnable);
         }
-
-        for (Thread t : threads) {
-            t.join();
-        }
-
+        threadPoolExecutor1.shutdown();
+        cdl.await();
 //        System.out.println(num);
         System.out.println(num.get());
     }

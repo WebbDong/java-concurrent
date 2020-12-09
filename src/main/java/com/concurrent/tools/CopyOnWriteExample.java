@@ -1,4 +1,4 @@
-package com.concurrent.basic;
+package com.concurrent.tools;
 
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;

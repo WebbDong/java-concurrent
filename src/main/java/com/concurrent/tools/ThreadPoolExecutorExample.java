@@ -2,7 +2,10 @@ package com.concurrent.tools;
 
 import java.util.Random;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionHandler;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -25,7 +28,22 @@ public class ThreadPoolExecutorExample {
 
     }
 
-    public static void main(String[] args) throws Exception {
+    private static class MyThreadFactory implements ThreadFactory {
+
+        private static int count;
+
+        @Override
+        public Thread newThread(Runnable runnable) {
+            // 自定义线程名
+            return new Thread(runnable, String.format("order-service-getOrder-%d", count++));
+        }
+
+    }
+
+    /**
+     * ThreadPoolExecutor.execute(Runnable command)
+     */
+    private static void executeRunnable() {
         Runnable command = () -> System.out.println(Thread.currentThread().getName() + " task execute num = " + num++);
         /*
          * corePoolSize：核心线程数
@@ -48,8 +66,9 @@ public class ThreadPoolExecutorExample {
                 new ArrayBlockingQueue<>(5),
                 new ThreadPoolExecutor.AbortPolicy());
         threadPoolExecutor.allowCoreThreadTimeOut(true);
+        threadPoolExecutor.setThreadFactory(new MyThreadFactory());
         System.out.println("initial poolSize = " + threadPoolExecutor.getPoolSize());
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 15; i++) {
             threadPoolExecutor.execute(command);
         }
 /*        for (int i = 0; i < 30; i++) {
@@ -59,6 +78,83 @@ public class ThreadPoolExecutorExample {
         System.out.println("after poolSize = " + threadPoolExecutor.getPoolSize());
         threadPoolExecutor.shutdown();
         System.out.println("Finished...");
+    }
+
+    /**
+     * ThreadPoolExecutor.submit(Runnable task)
+     * @throws Exception
+     */
+    private static void submitRunnable() throws Exception {
+        Runnable command = () -> System.out.println(Thread.currentThread().getName() + " Runnable execute num = " + num++);
+        var threadPoolExecutor = new ThreadPoolExecutor(
+                5,
+                10,
+                5,
+                TimeUnit.SECONDS,
+                new ArrayBlockingQueue<>(5),
+                new ThreadPoolExecutor.AbortPolicy());
+        for (int i = 0; i < 15; i++) {
+            threadPoolExecutor.submit(command);
+
+            /*
+            final Future<?> future = threadPoolExecutor.submit(command);
+            // Runnable 接口的 run() 方法是没有返回值的，所以 submit(Runnable task) 这个方法返回的 Future
+            // 仅可以用来断言任务已经结束了，类似于 Thread.join()。
+            System.out.println("future.get() = " + future.get());
+             */
+        }
+        threadPoolExecutor.shutdown();
+    }
+
+    /**
+     * ThreadPoolExecutor.submit(Callable<T> task)
+     * @throws Exception
+     */
+    private static void submitCallable() throws Exception {
+        var threadPoolExecutor = new ThreadPoolExecutor(
+                5,
+                10,
+                5,
+                TimeUnit.SECONDS,
+                new ArrayBlockingQueue<>(5),
+                new ThreadPoolExecutor.AbortPolicy());
+        final Callable<Integer> callable = () -> {
+            System.out.println(Thread.currentThread().getName() + " Runnable execute num = " + num++);
+            return num;
+        };
+        for (int i = 0; i < 15; i++) {
+            final Future<?> future = threadPoolExecutor.submit(callable);
+            System.out.println("future.get() = " + future.get());
+        }
+        threadPoolExecutor.shutdown();
+    }
+
+    /**
+     * ThreadPoolExecutor.submit(Runnable task, T result)
+     */
+    private static void submitRunnableResult() throws Exception {
+        var threadPoolExecutor = new ThreadPoolExecutor(
+                5,
+                10,
+                5,
+                TimeUnit.SECONDS,
+                new ArrayBlockingQueue<>(5),
+                new ThreadPoolExecutor.AbortPolicy());
+        final Runnable runnable = () -> {
+            System.out.println(Thread.currentThread().getName() + " Runnable execute num = " + num++);
+        };
+        for (int i = 0; i < 15; i++) {
+            final Future<Integer> future = threadPoolExecutor.submit(runnable, 9000);
+            System.out.println("future.get() = " + future.get());
+        }
+        threadPoolExecutor.shutdown();
+    }
+
+    public static void main(String[] args) throws Exception {
+//        executeRunnable();
+//        submitRunnable();
+//        submitCallable();
+        submitRunnableResult();
     }
 
 }

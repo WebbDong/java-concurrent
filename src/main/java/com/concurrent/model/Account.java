@@ -73,6 +73,8 @@ public class Account {
 
         @SneakyThrows
         public synchronized void applyWithWait(Object from, Object to) {
+            // 经典写法，notify() 和 notifyAll() 只能保证在通知时间点，条件是满足的。而被通知线程的执行时间点和通知的时间点基本上不会重合，
+            // 所以当线程执行的时候，很可能条件已经不满足了。需要使用循环来再次判断条件
             while (usingLockList.contains(from)
                     || usingLockList.contains(to)) {
                 this.wait();

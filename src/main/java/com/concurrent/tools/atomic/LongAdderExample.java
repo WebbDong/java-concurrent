@@ -14,7 +14,8 @@ public class LongAdderExample {
     private static LongAdder longAdder = new LongAdder();
 
     public static void main(String[] args) throws InterruptedException {
-        CountDownLatch cdl = new CountDownLatch(10);
+        final int THREAD_COUNT = 10;
+        CountDownLatch cdl = new CountDownLatch(THREAD_COUNT);
         var threadPoolExecutor = new ThreadPoolExecutor(
                 5,
                 10,
@@ -28,7 +29,7 @@ public class LongAdderExample {
             }
             cdl.countDown();
         };
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < THREAD_COUNT; i++) {
             threadPoolExecutor.execute(runnable);
         }
         cdl.await();

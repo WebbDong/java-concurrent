@@ -12,7 +12,7 @@ import java.util.function.Predicate;
  * Guarded Suspension模式实现
  * @param <T>
  */
-class GuardedObject<T> {
+class GuardedSuspensionObject<T> {
 
     /**
      * 受保护的对象
@@ -25,7 +25,7 @@ class GuardedObject<T> {
 
     private final int TIME_OUT = 2;
 
-    private final static Map<Object, GuardedObject> gos = new ConcurrentHashMap<>();
+    private final static Map<Object, GuardedSuspensionObject> gos = new ConcurrentHashMap<>();
 
     /**
      * 创建GuardedObject
@@ -33,8 +33,8 @@ class GuardedObject<T> {
      * @param <K>
      * @return
      */
-    public static <K> GuardedObject<K> create(K key) {
-        GuardedObject<K> go = new GuardedObject<>();
+    public static <K> GuardedSuspensionObject create(K key) {
+        GuardedSuspensionObject go = new GuardedSuspensionObject();
         gos.put(key, go);
         return go;
     }
@@ -47,7 +47,7 @@ class GuardedObject<T> {
      * @param <T>
      */
     public static <K, T> void fireEvent(K key, T obj) {
-        final GuardedObject go = gos.remove(key);
+        final GuardedSuspensionObject<T> go = gos.remove(key);
         if (go != null) {
             go.onChange(obj);
         }
@@ -99,7 +99,7 @@ public class GuardedSuspensionPattern {
     private static final int ID = 10;
 
     public static void main(String[] args) {
-        GuardedObject<Integer> go = GuardedObject.create(ID);
+        GuardedSuspensionObject<Integer> go = GuardedSuspensionObject.create(ID);
         asyncFunc();
         // 异步转同步
         final Integer resSum = go.get(obj -> obj != null);
@@ -118,7 +118,7 @@ public class GuardedSuspensionPattern {
                 }
                 TimeUnit.SECONDS.sleep(2);
                 // 触发事件，唤醒等待的线程
-                GuardedObject.fireEvent(ID, sum);
+                GuardedSuspensionObject.fireEvent(ID, sum);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }

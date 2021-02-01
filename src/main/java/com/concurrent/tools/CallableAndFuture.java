@@ -12,23 +12,25 @@ import java.util.concurrent.FutureTask;
 public class CallableAndFuture {
 
     public static void main(String[] args) throws Exception {
-        Callable<String> callable = () -> {
+        Callable<Integer> callable = () -> {
+            int sum = 0;
             for (int i = 0; i < 10; i++) {
                 System.out.print(i + " ");
                 Thread.sleep(300);
+                sum += i;
             }
-            return "Success";
+            return sum;
         };
 
-        FutureTask<String> task = new FutureTask<>(callable);
+        FutureTask<Integer> task = new FutureTask<>(callable);
         Thread thread = new Thread(task);
         thread.start();
 
         System.out.println("main");
 
         // 此处会阻塞，直到Callable执行完，然后返回结果
-        String res = task.get();
-        System.out.println(res);
+        Integer sum = task.get();
+        System.out.println("\nsum = " + sum);
     }
 
 }

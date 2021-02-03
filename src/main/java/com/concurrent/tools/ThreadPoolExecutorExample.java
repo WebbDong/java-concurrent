@@ -51,6 +51,16 @@ public class ThreadPoolExecutorExample {
          * keepAliveTime：空闲线程存活时间
          * unit：时间单位
          * workQueue：任务阻塞队列
+         *      有界队列:
+         *          SynchronousQueue:
+         *          ArrayBlockingQueue:
+         *
+         *      无界队列:
+         *          LinkedBlockingQueue:
+         *          LinkedBlockingDeque:
+         *          PriorityBlockingQueue:
+         *          LinkedTransferQueue:
+         *
          * threadFactory：线程创建工厂
          * handler：拒绝策略处理器
          *      ThreadPoolExecutor.AbortPolicy：默认的策略，多出的无法处理的任务直接抛出java.util.concurrent.RejectedExecutionException异常

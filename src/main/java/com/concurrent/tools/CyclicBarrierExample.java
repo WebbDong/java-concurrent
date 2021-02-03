@@ -2,6 +2,7 @@ package com.concurrent.tools;
 
 import java.util.ArrayDeque;
 import java.util.Queue;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -30,7 +31,8 @@ public class CyclicBarrierExample {
         System.out.println(Thread.currentThread().getName() + "： num1 + num2 = " + (num1 + num2));
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
+        final CountDownLatch cdl = new CountDownLatch(2);
         Thread t1 = new Thread(() -> {
             System.out.println("Line34：" + Thread.currentThread().getName());
             try {
@@ -42,6 +44,7 @@ public class CyclicBarrierExample {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            cdl.countDown();
         });
         t1.start();
 
@@ -56,8 +59,12 @@ public class CyclicBarrierExample {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            cdl.countDown();
         });
         t2.start();
+
+        cdl.await();
+        executorService.shutdown();
     }
 
 }

@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class CountDownLatchExample {
 
-    public static void main(String[] args) throws InterruptedException {
+    private static void example1() throws InterruptedException {
         final int COUNT = 100;
         final CountDownLatch cdl = new CountDownLatch(COUNT);
         final Runnable runnable = () -> {
@@ -31,10 +31,34 @@ public class CountDownLatchExample {
         new Thread(runnable, "Thread-1").start();
         new Thread(runnable, "Thread-2").start();
 
-        // 阻塞等待，计数器为0时继续向下执行
+        // main 线程阻塞等待，计数器为0时继续向下执行
         cdl.await();
 
         System.out.println("done");
+    }
+
+    private static void example2() throws InterruptedException {
+        final CountDownLatch cdl = new CountDownLatch(1);
+        for (int i = 0; i < 5; i++) {
+            new Thread(() -> {
+                try {
+                    // 所有线程阻塞在这里
+                    cdl.await();
+                    System.out.println(Thread.currentThread().getName() + " is starting...");
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }).start();
+        }
+
+        Thread.sleep(2000);
+        // 发号施令，所有线程继续执行
+        cdl.countDown();
+    }
+
+    public static void main(String[] args) throws InterruptedException {
+//        example1();
+        example2();
     }
 
 }

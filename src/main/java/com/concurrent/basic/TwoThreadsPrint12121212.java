@@ -1,5 +1,6 @@
 package com.concurrent.basic;
 
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -14,6 +15,8 @@ public class TwoThreadsPrint12121212 {
 
     private static final int PRINT_COUNT = 200;
 
+    private static boolean flag1 = true;
+
     /**
      * 方法一、使用锁的 wait 和 notify 机制
      */
@@ -23,16 +26,17 @@ public class TwoThreadsPrint12121212 {
         new Thread(() -> {
             for (int i = 0; i < PRINT_COUNT; i++) {
                 synchronized (lockObj) {
-                    System.out.println("1");
-                    // 唤醒对方
-                    lockObj.notifyAll();
-                    try {
-                        // 睡眠自己
-                        lockObj.wait();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+                    if (!flag1) {
+                        try {
+                            // 睡眠自己
+                            lockObj.wait();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                     }
-                    // 唤醒所有线程，防止最后线程永久等待
+                    System.out.println("1");
+                    flag1 = false;
+                    // 唤醒对方
                     lockObj.notifyAll();
                 }
             }
@@ -41,20 +45,22 @@ public class TwoThreadsPrint12121212 {
         new Thread(() -> {
             for (int i = 0; i < PRINT_COUNT; i++) {
                 synchronized (lockObj) {
-                    System.out.println("2");
-                    lockObj.notifyAll();
-                    try {
-                        lockObj.wait();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+                    if (flag1) {
+                        try {
+                            lockObj.wait();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                     }
+                    System.out.println("2");
+                    flag1 = true;
                     lockObj.notifyAll();
                 }
             }
         }).start();
     }
 
-    private static volatile boolean flag = true;
+    private static volatile boolean flag2 = true;
 
     /**
      * 方法二、使用 volatile 变量实现
@@ -62,64 +68,53 @@ public class TwoThreadsPrint12121212 {
     private static void method2() {
         new Thread(() -> {
             for (int i = 0; i < PRINT_COUNT;) {
-                if (flag) {
+                if (flag2) {
                     System.out.println("1");
                     i++;
-                    flag = false;
+                    flag2 = false;
                 }
             }
         }).start();
 
         new Thread(() -> {
             for (int i = 0; i < PRINT_COUNT;) {
-                if (!flag) {
+                if (!flag2) {
                     System.out.println("2");
                     i++;
-                    flag = true;
+                    flag2 = true;
                 }
             }
         }).start();
     }
 
     /**
-     * 方法三、使用 Lock 和 Condition 实现
+     * 方法三、使用信号量实现
      */
     private static void method3() {
-        final Lock lock = new ReentrantLock();
-        Condition condition1 = lock.newCondition();
-        Condition condition2 = lock.newCondition();
+        final Semaphore s1 = new Semaphore(1);
+        final Semaphore s2 = new Semaphore(0);
 
         new Thread(() -> {
             for (int i = 0; i < PRINT_COUNT; i++) {
-                lock.lock();
                 try {
-                    System.out.println("1");
-                    // 唤醒对方
-                    condition2.signalAll();
-                    // 睡眠自己
-                    condition1.await(200, TimeUnit.MILLISECONDS);
+                    s1.acquire();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
-                } finally {
-                    lock.unlock();
                 }
+                System.out.println("1");
+                s2.release();
             }
         }).start();
 
         new Thread(() -> {
             for (int i = 0; i < PRINT_COUNT; i++) {
-                lock.lock();
                 try {
-                    System.out.println("2");
-                    // 唤醒对方
-                    condition1.signalAll();
-                    // 睡眠自己
-                    condition2.await(200, TimeUnit.MILLISECONDS);
+                    s2.acquire();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
-                } finally {
-                    lock.unlock();
                 }
+                System.out.println("2");
+                s1.release();
             };
         }).start();
     }

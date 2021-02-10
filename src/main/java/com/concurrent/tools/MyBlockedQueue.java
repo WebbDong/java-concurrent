@@ -28,7 +28,9 @@ public class MyBlockedQueue<T> {
 
     private int size;
 
-    private int curIndex;
+    private int putIndex;
+
+    private int takeIndex;
 
     public MyBlockedQueue() {
         this(10);
@@ -51,7 +53,10 @@ public class MyBlockedQueue<T> {
                 // 当队列已满，阻塞入队操作
                 notFull.await();
             }
-            dataArr[curIndex++] = data;
+            dataArr[putIndex++] = data;
+            if (putIndex == dataArr.length) {
+                putIndex = 0;
+            }
             size++;
             // 唤醒出队操作
             notEmpty.signalAll();
@@ -71,7 +76,10 @@ public class MyBlockedQueue<T> {
                 // 当队列为空时，阻塞出队操作
                 notEmpty.await();
             }
-            Object data = dataArr[--curIndex];
+            Object data = dataArr[takeIndex++];
+            if (takeIndex == dataArr.length) {
+                takeIndex = 0;
+            }
             size--;
             // 唤醒入队操作
             notFull.signalAll();
@@ -95,6 +103,11 @@ public class MyBlockedQueue<T> {
         }).start();
 
         new Thread(() -> {
+            try {
+                TimeUnit.SECONDS.sleep(5);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             while (true) {
                 try {
                     System.out.println(Thread.currentThread().getName() + ": num = " + queue.deq());

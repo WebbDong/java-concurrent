@@ -6,7 +6,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * 使用Lock&Condition实现阻塞队列
+ * 使用 Lock & Condition 实现阻塞队列
  */
 public class MyBlockedQueue<T> {
 
@@ -84,6 +84,15 @@ public class MyBlockedQueue<T> {
             // 唤醒入队操作
             notFull.signalAll();
             return (T) data;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public int getSize() {
+        try {
+            lock.lock();
+            return size;
         } finally {
             lock.unlock();
         }

@@ -81,7 +81,7 @@ public class ForkJoinExample {
             /**
              * 阈值，每1000个元素为一段数据
              */
-            private final static int THRESHOLD = ARRAY_LENGTH / 10;
+            private final int THRESHOLD = ARRAY_LENGTH / 10;
 
             private int[] arr;
 
